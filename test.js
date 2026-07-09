@@ -362,4 +362,23 @@ test.describe('cli-mm test suite', () => {
       generateReport({ fromStr: '2020-01-01' });
     }, /required/);
   });
+
+  test('Forecast / Estimation: daily average and remaining days', () => {
+    const { generateEstimation } = require('./report');
+    addWallet('CashWallet2', 300000);
+    
+    // Add transaction to normal wallet CashWallet2
+    addTransaction({
+      walletName: 'CashWallet2',
+      categoryName: 'Food',
+      amount: -10000,
+      description: 'Test spent'
+    });
+
+    const est = generateEstimation();
+    // Assets: 290,000, Spending: 10,000/day (for 1 day)
+    assert.strictEqual(est.totalNormalAssets, 290000);
+    assert.strictEqual(est.avgDaily, 10000);
+    assert.strictEqual(est.remainingDays, 29);
+  });
 });

@@ -5,7 +5,7 @@ const { addCategory, listCategories } = require('./category');
 const { addTransaction, listTransactions, deleteTransaction } = require('./transaction');
 const { loadData } = require('./storage');
 const { addDebt, settleDebt, listDebts } = require('./debt');
-const { generateReport } = require('./report');
+const { generateReport, generateEstimation } = require('./report');
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -55,6 +55,7 @@ Reports:
 
 Summary & Overview:
   mm summary
+  mm estimate
   mm help
 `);
 }
@@ -317,6 +318,17 @@ function handleReport() {
   }
 }
 
+}
+
+function handleEstimate() {
+  try {
+    generateEstimation();
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
 // Route commands
 switch (command) {
   case 'wallet':
@@ -336,6 +348,9 @@ switch (command) {
     break;
   case 'summary':
     handleSummary();
+    break;
+  case 'estimate':
+    handleEstimate();
     break;
   case 'help':
   default:

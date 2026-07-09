@@ -202,6 +202,68 @@ function generateReport({ period, fromStr, toStr }) {
   };
 }
 
+function generateEstimation() {
+  const data = loadData();
+  const normalWallets = data.wallets.filter(w => w.type !== 'credit');
+  const normalWalletIds = new Set(normalWallets.map(w => w.id));
+
+  const totalNormalAssets = normalWallets.reduce((acc, w) => acc + w.balance, 0);
+
+  const normalExpenses = data.transactions.filter(tx => 
+    normalWalletIds.has(tx.walletId) && tx.amount < 0
+  );
+
+  console.log('\n======================================');
+  console.log('         BUDGET & ESTIMATION          ');
+  console.log('======================================');
+  console.log(`Normal Assets (Cash/Bank): ${formatCurrency(totalNormalAssets)}`);
+
+  if (normalExpenses.length === 0) {
+    console.log('--------------------------------------');
+    console.log('No expenses logged from normal wallets yet.');
+    console.log('Cannot calculate daily average or estimate.');
+    console.log('======================================\n');
+    return { avgDaily: 0, remainingDays: 0 };
+  }
+
+  const timestamps = normalExpenses.map(tx => new Date(tx.timestamp).getTime());
+  const minTime = Math.min(...timestamps);
+  const firstDate = new Date(minTime);
+  const today = new Date();
+  
+  // Calculate day difference (minimum 1 day)
+  const diffTime = Math.abs(today - firstDate);
+  const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+  const totalSpent = normalExpenses.reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
+  const avgDaily = totalSpent / diffDays;
+
+  console.log(`Avg Daily Spending:        ${formatCurrency(avgDaily)}/day`);
+  console.log(`Analyzing Period:          ${diffDays} day(s) (Since ${firstDate.toLocaleDateString('vi-VN')})`);
+  console.log('--------------------------------------');
+
+  if (totalNormalAssets <= 0) {
+    console.log('Remaining Days Estimate:   0 days (No funds available)');
+  } else if (avgDaily === 0) {
+    console.log('Remaining Days Estimate:   Infinite (No expenses registered)');
+  } else {
+    const remainingDays = totalNormalAssets / avgDaily;
+    const depletionDate = new Date();
+    depletionDate.setDate(today.getDate() + Math.floor(remainingDays));
+    
+    console.log(`Estimated Remaining Days:  ${Math.floor(remainingDays)} day(s)`);
+    console.log(`Expected Depletion Date:   ${depletionDate.toLocaleDateString('vi-VN')}`);
+  }
+  console.log('======================================\n');
+
+  return {
+    totalNormalAssets,
+    avgDaily,
+    remainingDays: avgDaily > 0 ? totalNormalAssets / avgDaily : 0
+  };
+}
+
 module.exports = {
-  generateReport
+  generateReport,
+  generateEstimation
 };

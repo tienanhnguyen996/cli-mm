@@ -37,8 +37,9 @@ function loadData() {
   try {
     ensureDbDir();
     if (!fs.existsSync(DB_FILE)) {
-      saveData(DEFAULT_DATA);
-      return DEFAULT_DATA;
+      const freshData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      saveData(freshData);
+      return freshData;
     }
     const raw = fs.readFileSync(DB_FILE, 'utf8');
     const data = JSON.parse(raw);
