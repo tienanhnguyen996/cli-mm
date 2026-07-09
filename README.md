@@ -119,7 +119,10 @@ If you are installing inside Termux, follow these extra steps:
 *   **Generate custom range reports:**
     ```bash
     mm report --from YYYY-MM-DD --to YYYY-MM-DD
+    mm report --from YYYY-MM-DD --to YYYY-MM-DD
     ```
+
+*Note: Reports automatically display outstanding debts and loans aggregated case-insensitively by friend name (e.g. "Nam" and "nam" are merged into a single entry, preserving the first encountered casing for display).*
 
 ---
 
