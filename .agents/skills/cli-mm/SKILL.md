@@ -45,24 +45,40 @@ When the user mentions a group activity, uses the keyword **"group"**, or pays f
     *   **Step 2 (Log the debts):** Once the transaction ID is generated (e.g. `tx_123`), show the user how to log the linked debts:
         `node index.js debt add --type lend --friend "Nam" --amount 100000 --tx tx_123 --desc "<description> Share"`
         `node index.js debt add --type lend --friend "Minh" --amount 100000 --tx tx_123 --desc "<description> Share"`
+        *(Note: Do NOT specify `--wallet` here. Because the full 300k was already deducted in Step 1, using `--tx` links the debt without double-deducting).*
 
 ---
 
 ## 3. Lending & Borrowing Workflow
 
-Translate natural language statements about debts into CLI commands:
+Translate natural language statements about debts into CLI commands using the correct transaction-centric rules:
 
-### A. If the user lent money or paid on behalf:
-*   User: "Nam owes me 100k for taxi"
-*   AI Command: `node index.js debt add --type lend --friend "Nam" --amount 100000 --desc "Taxi Share"`
+### A. Direct Lending (You give cash/transfer directly to them)
+Suggest including the `--wallet` flag so that your wallet balance is immediately reduced:
+*   User: "I lent Nam 100k cash"
+*   AI Command: `node index.js debt add --type lend --friend "Nam" --amount 100000 --wallet Cash --desc "Direct loan"`
 
-### B. If the user borrowed money (is in debt):
-*   User: "I borrowed 50k from Minh for lunch"
-*   AI Command: `node index.js debt add --type borrow --friend "Minh" --amount 50000 --desc "Lunch Share"`
+### B. Indirect Lending / Group Bill Split
+Do not specify `--wallet`, but instead link to the transaction (`--tx <tx_id>`) so it doesn't double-deduct:
+*   User: "Nam owes me 100k for the dinner yesterday"
+*   AI Command: `node index.js debt add --type lend --friend "Nam" --amount 100000 --tx <tx_id> --desc "Dinner Share"`
 
-### C. If a debt is being settled:
+### C. Direct Borrowing (They give cash/transfer directly to you)
+Suggest including the `--wallet` flag so that your wallet balance is immediately increased:
+*   User: "Minh transferred me 50k to borrow"
+*   AI Command: `node index.js debt add --type borrow --friend "Minh" --amount 50000 --wallet Cash --desc "Borrowed cash"`
+
+### D. Indirect Borrowing (They paid on your behalf / group bill split)
+Do not specify `--wallet` (or `--tx`). The debt record will be logged without changing your wallet balance:
+*   User: "Minh paid 50k for my share of the taxi"
+*   AI Command: `node index.js debt add --type borrow --friend "Minh" --amount 50000 --desc "Taxi share"`
+
+### E. Settlement & Repayments
 *   User: "Nam paid me back"
-*   AI Action: 
-    1. Search for the debt record (generate/suggest `node index.js debt list --friend Nam --unsettled`).
-    2. Once the user identifies the debt ID (e.g. `debt_456`), provide the settle command:
-       `node index.js debt settle debt_456 --wallet <selected_wallet>`
+    1.  Suggest finding the debt ID first: `node index.js debt list --friend Nam --unsettled`
+    2.  Generate the settlement command (which increases your wallet balance):
+        `node index.js debt settle <debt_id> --wallet <wallet>`
+*   User: "I paid Minh back"
+    1.  Suggest finding the debt ID first: `node index.js debt list --friend Minh --unsettled`
+    2.  Generate the settlement command (which decreases your wallet balance):
+        `node index.js debt settle <debt_id> --wallet <wallet>`
