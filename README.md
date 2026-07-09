@@ -110,6 +110,10 @@ If you are installing inside Termux, follow these extra steps:
     ```bash
     mm summary
     ```
+*   **Generate budget & forecast estimation:**
+    ```bash
+    mm estimate
+    ```
 *   **Generate daily/weekly/monthly reports:**
     ```bash
     mm report daily

@@ -92,6 +92,7 @@ When the user requests an analysis, report, or summary of their spending/income 
 *   **Custom Range:** For specific dates (e.g., "from July 1 to July 9"), use:
     `mm report --from 2026-07-01 --to 2026-07-09`
 *   **Debt Grouping:** Outstanding debts and loans in the reports are aggregated case-insensitively by friend name (keys normalized to lowercase, original casing preserved for display).
+*   **Estimation & Budgeting:** If they ask about how long their money will last or their daily average spending (excluding credit), use: `mm estimate`
 
 ---
 
