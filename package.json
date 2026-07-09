@@ -1,0 +1,22 @@
+{
+  "name": "cli-mm",
+  "version": "1.0.0",
+  "description": "CLI Money Management (cli-mm)",
+  "main": "index.js",
+  "bin": {
+    "mm": "./index.js",
+    "cli-mm": "./index.js"
+  },
+  "scripts": {
+    "test": "node --test test.js"
+  },
+  "keywords": [
+    "cli",
+    "money",
+    "finance",
+    "expense",
+    "tracker"
+  ],
+  "author": "",
+  "license": "ISC"
+}

@@ -19,13 +19,18 @@ A zero-dependency, local JSON-based CLI money management tool built in Node.js. 
 
 ## Installation & Setup
 
-Ensure you have Node.js (v18+) installed. Clone the repository and run commands directly.
+Ensure you have Node.js (v18+) installed. Clone the repository and install it globally to use the CLI executable directly:
 
 ```bash
 # Clone the repository
 git clone https://github.com/tienanhnguyen996/cli-mm.git
 cd cli-mm
+
+# Link the CLI tool globally
+npm link
 ```
+
+Once linked, you can replace `node index.js` in all commands with `mm` or `cli-mm` (e.g. `mm summary`).
 
 ---
 
