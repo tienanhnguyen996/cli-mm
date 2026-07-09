@@ -150,6 +150,41 @@ function generateReport({ period, fromStr, toStr }) {
       console.log(`  * ${w.name}: Net ${net >= 0 ? '+' : ''}${formatCurrency(net)} (In: +${formatCurrency(w.income)}, Out: ${formatCurrency(w.expense)})`);
     });
   }
+
+  // Outstanding Debts & Loans
+  console.log('\nOutstanding Debts & Loans:');
+  const unsettled = data.debts.filter(d => !d.isSettled);
+  if (unsettled.length === 0) {
+    console.log('  No outstanding debts or loans.');
+  } else {
+    const owedToYou = {};
+    const youOwe = {};
+
+    unsettled.forEach(d => {
+      if (d.type === 'lend') {
+        owedToYou[d.friend] = (owedToYou[d.friend] || 0) + d.amount;
+      } else if (d.type === 'borrow') {
+        youOwe[d.friend] = (youOwe[d.friend] || 0) + d.amount;
+      }
+    });
+
+    const owedToYouEntries = Object.entries(owedToYou);
+    const youOweEntries = Object.entries(youOwe);
+
+    if (owedToYouEntries.length > 0) {
+      console.log('  * Owed to You (Friends owe you):');
+      owedToYouEntries.forEach(([friend, amount]) => {
+        console.log(`    - ${friend}: ${formatCurrency(amount)}`);
+      });
+    }
+
+    if (youOweEntries.length > 0) {
+      console.log('  * You Owe (You owe friends):');
+      youOweEntries.forEach(([friend, amount]) => {
+        console.log(`    - ${friend}: ${formatCurrency(amount)}`);
+      });
+    }
+  }
   console.log('======================================\n');
 
   return {
