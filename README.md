@@ -52,57 +52,63 @@ If you are installing inside Termux, follow these extra steps:
 ### Wallets
 *   **List wallets:**
     ```bash
-    node index.js wallet list
+    mm wallet list
     ```
 *   **Add a wallet:**
     ```bash
-    node index.js wallet add <name> [initial_balance]
+    mm wallet add <name> [initial_balance] [--type <normal|credit>] [--limit <limit>]
     ```
-    *Example:* `node index.js wallet add TPBank 5000000`
+    *Example:* `mm wallet add TPBank 5000000`
+*   **Set/Override a wallet's balance directly:**
+    ```bash
+    mm wallet set <name> <balance>
+    mm wallet override <name> <balance>
+    ```
+    *Example:* `mm wallet set TPBank 2972363`
 
 ### Categories
 *   **List categories:**
     ```bash
-    node index.js category list
+    mm category list
     ```
 *   **Add a category:**
     ```bash
-    node index.js category add <name>
+    mm category add <name>
     ```
-    *Example:* `node index.js category add Gifts`
+    *Example:* `mm category add Gifts`
 
 ### Transactions
 *   **Log transaction:**
     ```bash
-    node index.js tx add --wallet <wallet> --category <category> --amount <amount> [--desc <description>]
+    mm tx add --wallet <wallet> --category <category> --amount <amount> [--desc <description>]
     ```
     *(Use negative amount for expenses, positive for income)*
-    *Example:* `node index.js tx add --wallet TPBank --category Food --amount -120000 --desc "Dinner at Pizza 4Ps"`
+    *Example:* `mm tx add --wallet TPBank --category Food --amount -120000 --desc "Dinner at Pizza 4Ps"`
 *   **List transactions:**
     ```bash
-    node index.js tx list [--wallet <name>] [--category <name>]
+    mm tx list [--wallet <name>] [--category <name>]
     ```
 *   **Delete transaction:**
     ```bash
-    node index.js tx delete <transaction_id>
+    mm tx delete <transaction_id>
     ```
 
 ### Debts & Loans
 *   **Add a debt (Lend/Borrow):**
     ```bash
-    node index.js debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <desc>]
+    mm debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <desc>]
     ```
-    *   **Direct Lend:** `node index.js debt add --type lend --friend Nam --amount 100000 --wallet Cash` (reduces Cash by 100k)
-    *   **Indirect Lend (Group split):** `node index.js debt add --type lend --friend Nam --amount 100000 --tx tx_123` (no balance changes)
-    *   **Direct Borrow:** `node index.js debt add --type borrow --friend Minh --amount 50000 --wallet Cash` (increases Cash by 50k)
-    *   **Indirect Borrow:** `node index.js debt add --type borrow --friend Minh --amount 50000` (no balance changes)
+    *   **Direct Lend:** `mm debt add --type lend --friend Nam --amount 100000 --wallet Cash` (reduces Cash by 100k)
+    *   **Indirect Lend (Group split):** `mm debt add --type lend --friend Nam --amount 100000 --tx tx_123` (no balance changes)
+    *   **Direct Borrow:** `mm debt add --type borrow --friend Minh --amount 50000 --wallet Cash` (increases Cash by 50k)
+    *   **Indirect Borrow:** `mm debt add --type borrow --friend Minh --amount 50000` (no balance changes)
 *   **List unsettled debts:**
     ```bash
-    node index.js debt list [--friend <name>] [--unsettled]
+    mm debt list [--friend <name>] [--unsettled]
     ```
 *   **Settle a debt:**
     ```bash
-    node index.js debt settle <debt_id> --wallet <wallet>
+    mm debt settle <debt_id> --wallet <wallet>
     ```
 
 ### Summary & Reports

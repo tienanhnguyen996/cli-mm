@@ -29,7 +29,16 @@ When the user asks you to log a transaction or mentions an expense:
 
 ---
 
-## 2. Group Expense & Split Billing Workflow
+## 2. Wallet & Balance Adjustments Workflow
+When the user wants to adjust, set, or override the balance of their wallet directly without creating a transaction:
+*   User: "Set my tpbank balance to 2,972,363 VND"
+*   AI Command: `mm wallet set tpbank 2972363`
+*   User: "Override momo to -24,000"
+*   AI Command: `mm wallet override momo -24000`
+
+---
+
+## 3. Group Expense & Split Billing Workflow
 
 When the user mentions a group activity, uses the keyword **"group"**, or pays for friends (e.g., "I paid for dinner with Nam and Minh"):
 
@@ -49,7 +58,7 @@ When the user mentions a group activity, uses the keyword **"group"**, or pays f
 
 ---
 
-## 3. Lending & Borrowing Workflow
+## 4. Lending & Borrowing Workflow
 
 Translate natural language statements about debts into CLI commands using the correct transaction-centric rules:
 
@@ -84,7 +93,7 @@ Do not specify `--wallet` (or `--tx`). The debt record will be logged without ch
 
 ---
 
-## 4. Financial Reporting Workflow
+## 5. Financial Reporting Workflow
 When the user requests an analysis, report, or summary of their spending/income over a period:
 *   **Daily:** For "today", use: `mm report daily`
 *   **Weekly:** For "this week", use: `mm report weekly`
@@ -96,7 +105,7 @@ When the user requests an analysis, report, or summary of their spending/income 
 
 ---
 
-## 4. Termux (Android) Environment Nuances
+## 6. Termux (Android) Environment Nuances
 If the user reports that the `mm` executable does not run on Termux (e.g. throwing shebang or command-not-found errors):
 1.  **Shebang Path:** Verify that the shebang at the top of `index.js` points to `#!/data/data/com.termux/files/usr/bin/env node`.
 2.  **Permissions:** Instruct the user to run `chmod +x index.js` to grant executable permissions.
