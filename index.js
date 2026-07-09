@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/env node
 
-const { addWallet, listWallets } = require('./wallet');
+const { addWallet, listWallets, setWalletBalance } = require('./wallet');
 const { addCategory, listCategories } = require('./category');
 const { addTransaction, listTransactions, deleteTransaction } = require('./transaction');
 const { loadData } = require('./storage');
@@ -34,6 +34,8 @@ CLI Money Management (cli-mm) - Usage Guide
 Wallets:
   mm wallet list
   mm wallet add <name> [initial_balance] [--type <normal|credit>] [--limit <limit>]
+  mm wallet set <name> <balance>
+  mm wallet override <name> <balance>
 
 Categories:
   mm category list
@@ -111,8 +113,22 @@ function handleWallet() {
       console.error(`Error: ${error.message}`);
       process.exit(1);
     }
+  } else if (subcommand === 'set' || subcommand === 'override') {
+    const name = args[2];
+    const newBalance = args[3];
+    if (!name || newBalance === undefined || isNaN(Number(newBalance))) {
+      console.error('Error: Please specify wallet name and new balance. Example: mm wallet set "TPBank" 500000');
+      process.exit(1);
+    }
+    try {
+      const wallet = setWalletBalance(name, newBalance);
+      console.log(`Wallet "${wallet.name}" balance successfully updated to ${formatCurrency(wallet.balance)}.`);
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+      process.exit(1);
+    }
   } else {
-    console.error('Unknown wallet subcommand. Try: list, add');
+    console.error('Unknown wallet subcommand. Try: list, add, set, override');
     process.exit(1);
   }
 }

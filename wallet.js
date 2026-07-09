@@ -48,8 +48,30 @@ function getWallet(idOrName) {
   return data.wallets.find(w => w.id === lower || w.name.toLowerCase() === lower);
 }
 
+function setWalletBalance(name, newBalance) {
+  const data = loadData();
+  const wallet = data.wallets.find(w => 
+    w.id === name.toLowerCase() || 
+    w.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (!wallet) {
+    throw new Error(`Wallet "${name}" not found.`);
+  }
+
+  const amt = Number(newBalance);
+  if (isNaN(amt)) {
+    throw new Error('Balance must be a number.');
+  }
+
+  wallet.balance = amt;
+  saveData(data);
+  return wallet;
+}
+
 module.exports = {
   addWallet,
   listWallets,
-  getWallet
+  getWallet,
+  setWalletBalance
 };

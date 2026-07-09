@@ -381,4 +381,25 @@ test.describe('cli-mm test suite', () => {
     assert.strictEqual(est.avgDaily, 10000);
     assert.strictEqual(est.remainingDays, 29);
   });
+
+  test('Wallet: set/override balance directly', () => {
+    const { setWalletBalance } = require('./wallet');
+    addWallet('OverrideTest', 1000);
+    
+    const updated = setWalletBalance('OverrideTest', 250000);
+    assert.strictEqual(updated.balance, 250000);
+
+    const check = getWallet('overridetest');
+    assert.strictEqual(check.balance, 250000);
+
+    // Edge case: invalid amount
+    assert.throws(() => {
+      setWalletBalance('OverrideTest', 'invalid');
+    }, /must be a number/);
+
+    // Edge case: non-existent wallet
+    assert.throws(() => {
+      setWalletBalance('NonExistentWallet', 100);
+    }, /not found/);
+  });
 });
