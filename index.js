@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/data/data/com.termux/files/usr/bin/env node
 
 const { addWallet, listWallets } = require('./wallet');
 const { addCategory, listCategories } = require('./category');
@@ -45,7 +45,7 @@ Transactions:
 
 Loans & Debts:
   node index.js debt list [--friend <name>] [--unsettled]
-  node index.js debt add --type <lend|borrow> --friend <name> --amount <amount> [--tx <tx_id>] [--desc <description>]
+  node index.js debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <description>]
   node index.js debt settle <debt_id> --wallet <wallet>
 
 Summary & Overview:
@@ -247,7 +247,7 @@ function handleSummary() {
   console.log('       MONEY MANAGEMENT SUMMARY       ');
   console.log('======================================');
   console.log(`Total Net Assets: ${formatCurrency(totalAssets)}`);
-  
+
   console.log('\n--- Wallets ---');
   data.wallets.forEach(w => {
     console.log(`  * ${w.name}: ${formatCurrency(w.balance)}`);
