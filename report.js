@@ -231,9 +231,11 @@ function generateEstimation() {
   const firstDate = new Date(minTime);
   const today = new Date();
   
-  // Calculate day difference (minimum 1 day)
-  const diffTime = Math.abs(today - firstDate);
-  const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  // Calculate calendar days difference (inclusive of start and end days)
+  const firstDateOnly = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
+  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diffTime = Math.abs(todayDateOnly - firstDateOnly);
+  const diffDays = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1);
 
   const totalSpent = normalExpenses.reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
   const avgDaily = totalSpent / diffDays;
