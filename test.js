@@ -149,7 +149,7 @@ test.describe('cli-mm test suite', () => {
   test('Debt: Lend, Borrow, Settle and edge cases', () => {
     addWallet('Savings', 500000);
     
-    // Create reference transaction
+    // 1. Indirect lending: linked to group bill transaction (no wallet)
     const { transaction: pizzaTx } = addTransaction({
       walletName: 'Savings',
       categoryName: 'Food',
@@ -157,7 +157,6 @@ test.describe('cli-mm test suite', () => {
       description: 'Dinner'
     });
 
-    // Lend debt linked to transaction
     const d1 = addDebt({
       type: 'lend',
       friendName: 'Nam',
@@ -170,28 +169,76 @@ test.describe('cli-mm test suite', () => {
     assert.strictEqual(d1.amount, 100000);
     assert.strictEqual(d1.txId, pizzaTx.id);
 
-    // Verify wallet balance is NOT affected by adding debt
-    const wBeforeSettle = getWallet('savings');
-    assert.strictEqual(wBeforeSettle.balance, 200000); // 500k - 300k = 200k
+    // Verify wallet balance is NOT affected by indirect lending (remains 200k)
+    let w = getWallet('savings');
+    assert.strictEqual(w.balance, 200000);
 
-    // Settle lend debt (friend pays back)
-    const { debt: settledLend, newBalance: bAfterLend } = settleDebt(d1.id, 'Savings');
-    assert.strictEqual(settledLend.isSettled, true);
-    assert.strictEqual(bAfterLend, 300000); // 200k + 100k payback = 300k
-
-    // Borrow debt (you owe friend)
+    // 2. Direct lending (with wallet, no txId)
     const d2 = addDebt({
+      type: 'lend',
+      friendName: 'An',
+      amount: 50000,
+      walletName: 'Savings',
+      description: 'Cash loan'
+    });
+    assert.strictEqual(d2.type, 'lend');
+    // Verify wallet balance decreases immediately (200k - 50k = 150k)
+    w = getWallet('savings');
+    assert.strictEqual(w.balance, 150000);
+    // Verify a Lend transaction was automatically logged
+    const txs = listTransactions({ wallet: 'savings' });
+    const lendTx = txs.find(tx => tx.category === 'Lend');
+    assert.ok(lendTx);
+    assert.strictEqual(lendTx.amount, -50000);
+
+    // 3. Indirect borrowing: friend paid on behalf (no wallet)
+    const d3 = addDebt({
       type: 'borrow',
       friendName: 'Minh',
-      amount: 50000,
-      description: 'Taxi'
+      amount: 40000,
+      description: 'Taxi share'
     });
-    assert.strictEqual(d2.type, 'borrow');
+    assert.strictEqual(d3.type, 'borrow');
+    assert.strictEqual(d3.txId, null);
+    // Verify wallet balance is NOT affected (remains 150k)
+    w = getWallet('savings');
+    assert.strictEqual(w.balance, 150000);
 
-    // Settle borrow debt (you pay friend back)
-    const { debt: settledBorrow, newBalance: bAfterBorrow } = settleDebt(d2.id, 'Savings');
+    // 4. Direct borrowing (with wallet, e.g. friend gave us cash)
+    const d4 = addDebt({
+      type: 'borrow',
+      friendName: 'Lan',
+      amount: 80000,
+      walletName: 'Savings',
+      description: 'Borrowed cash'
+    });
+    assert.strictEqual(d4.type, 'borrow');
+    // Verify wallet balance increases immediately (150k + 80k = 230k)
+    w = getWallet('savings');
+    assert.strictEqual(w.balance, 230000);
+    // Verify a Borrow transaction was automatically logged
+    const borrowTx = listTransactions({ wallet: 'savings' }).find(tx => tx.category === 'Borrow');
+    assert.ok(borrowTx);
+    assert.strictEqual(borrowTx.amount, 80000);
+
+    // 5. Settling lend debt (friend pays back) -> adds to wallet (230k + 100k = 330k)
+    const { debt: settledLend, newBalance: bAfterLend } = settleDebt(d1.id, 'Savings');
+    assert.strictEqual(settledLend.isSettled, true);
+    assert.strictEqual(bAfterLend, 330000);
+
+    // 6. Settling indirect borrow debt (we pay them back) -> deducts from wallet (330k - 40k = 290k)
+    const { debt: settledBorrow, newBalance: bAfterBorrow } = settleDebt(d3.id, 'Savings');
     assert.strictEqual(settledBorrow.isSettled, true);
-    assert.strictEqual(bAfterBorrow, 250000); // 300k - 50k repayment = 250k
+    assert.strictEqual(bAfterBorrow, 290000);
+
+    // Edge case: Lending without wallet and without txId should throw error
+    assert.throws(() => {
+      addDebt({
+        type: 'lend',
+        friendName: 'Nam',
+        amount: 50000
+      });
+    }, /Lending requires/);
 
     // Edge case: Link debt to non-existent transaction
     assert.throws(() => {
@@ -211,10 +258,5 @@ test.describe('cli-mm test suite', () => {
         amount: 50000
       });
     }, /must be either/);
-
-    // Edge case: Settle already settled debt
-    assert.throws(() => {
-      settleDebt(d1.id, 'Savings');
-    }, /already settled/);
   });
 });

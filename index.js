@@ -193,7 +193,7 @@ function handleDebt() {
   } else if (subcommand === 'add') {
     const flags = parseFlags(args.slice(2));
     if (!flags.type || !flags.friend || !flags.amount) {
-      console.error('Error: Missing required fields. Usage: node index.js debt add --type <lend|borrow> --friend <name> --amount <amount> [--tx <tx_id>] [--desc <desc>]');
+      console.error('Error: Missing required fields. Usage: node index.js debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <desc>]');
       process.exit(1);
     }
     try {
@@ -202,6 +202,7 @@ function handleDebt() {
         friendName: flags.friend,
         amount: flags.amount,
         txId: flags.tx,
+        walletName: flags.wallet,
         description: flags.desc
       });
       console.log(`Debt logged successfully! ID: ${debt.id}`);

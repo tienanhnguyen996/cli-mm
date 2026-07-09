@@ -1,7 +1,7 @@
 const { loadData, saveData } = require('./storage');
 const { getWallet } = require('./wallet');
 
-function addDebt({ type, friendName, amount, txId, description }) {
+function addDebt({ type, friendName, amount, txId, walletName, description }) {
   const data = loadData();
 
   if (type !== 'lend' && type !== 'borrow') {
@@ -13,9 +13,10 @@ function addDebt({ type, friendName, amount, txId, description }) {
     throw new Error('Debt amount must be a positive number.');
   }
 
+  let finalTxId = txId || null;
   let finalDescription = description || '';
 
-  // If linked to transaction, verify it and auto-fill description if empty
+  // Case A: Linked to an existing transaction (Group Split)
   if (txId) {
     const linkedTx = data.transactions.find(t => t.id === txId);
     if (!linkedTx) {
@@ -24,6 +25,51 @@ function addDebt({ type, friendName, amount, txId, description }) {
     if (!finalDescription) {
       finalDescription = `Linked to: ${linkedTx.description || 'Transaction ' + txId}`;
     }
+  } 
+  // Case B: Direct cash transaction (Wallet provided)
+  else if (walletName) {
+    const wallet = data.wallets.find(w => 
+      w.id === walletName.toLowerCase() || 
+      w.name.toLowerCase() === walletName.toLowerCase()
+    );
+    if (!wallet) {
+      throw new Error(`Wallet "${walletName}" not found. Create it first using: node index.js wallet add "${walletName}"`);
+    }
+
+    // Lending decreases wallet balance (we gave money out)
+    // Borrowing increases wallet balance (they gave us money)
+    const changeAmount = type === 'lend' ? -debtAmount : debtAmount;
+    const category = type === 'lend' ? 'Lend' : 'Borrow';
+    const txDesc = type === 'lend'
+      ? `Lent to ${friendName.trim()}${description ? ': ' + description : ''}`
+      : `Borrowed from ${friendName.trim()}${description ? ': ' + description : ''}`;
+
+    const newTx = {
+      id: `tx_${Date.now()}`,
+      walletId: wallet.id,
+      category,
+      amount: changeAmount,
+      description: txDesc,
+      timestamp: new Date().toISOString()
+    };
+
+    // Update wallet balance and save transaction
+    wallet.balance += changeAmount;
+    data.transactions.push(newTx);
+    finalTxId = newTx.id;
+    if (!finalDescription) {
+      finalDescription = txDesc;
+    }
+  } 
+  // Case C: No wallet and no transaction linked
+  else {
+    if (type === 'lend') {
+      throw new Error('Lending requires either linking to an existing transaction (--tx) or specifying a wallet (--wallet) to deduct from.');
+    }
+    // For borrowing: this is "they paid on your behalf" (indirect borrow)
+    if (!finalDescription) {
+      finalDescription = `Borrowed from ${friendName.trim()} (Paid on your behalf)`;
+    }
   }
 
   const newDebt = {
@@ -31,7 +77,7 @@ function addDebt({ type, friendName, amount, txId, description }) {
     type,
     friend: friendName.trim(),
     amount: debtAmount,
-    txId: txId || null,
+    txId: finalTxId,
     description: finalDescription,
     isSettled: false,
     timestamp: new Date().toISOString()
