@@ -318,8 +318,6 @@ function handleReport() {
   }
 }
 
-}
-
 function handleEstimate() {
   try {
     generateEstimation();
