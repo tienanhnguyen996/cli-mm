@@ -317,4 +317,49 @@ test.describe('cli-mm test suite', () => {
     // Balance should remain -9,000,000
     assert.strictEqual(getWallet('creditcard').balance, -9000000);
   });
+
+  test('Financial Report: daily, weekly, monthly, and custom ranges', () => {
+    const { generateReport } = require('./report');
+    addWallet('CashWallet', 500000);
+
+    // Add an income (Salary: 1,000,000)
+    addTransaction({
+      walletName: 'CashWallet',
+      categoryName: 'Salary',
+      amount: 1000000,
+      description: 'Monthly Pay'
+    });
+
+    // Add an expense (Food: -200,000)
+    addTransaction({
+      walletName: 'CashWallet',
+      categoryName: 'Food',
+      amount: -200000,
+      description: 'Lunch'
+    });
+
+    // Run a daily report (which includes today's txs)
+    const reportToday = generateReport({ period: 'daily' });
+    assert.strictEqual(reportToday.txCount, 2);
+    assert.strictEqual(reportToday.totalIncome, 1000000);
+    assert.strictEqual(reportToday.totalExpense, -200000);
+    assert.strictEqual(reportToday.netCashFlow, 800000);
+
+    // Run a custom range report (matching today's date)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const reportCustom = generateReport({ fromStr: todayStr, toStr: todayStr });
+    assert.strictEqual(reportCustom.txCount, 2);
+    assert.strictEqual(reportCustom.totalIncome, 1000000);
+
+    // Run a custom range report in the past (should have 0 transactions)
+    const reportPast = generateReport({ fromStr: '2020-01-01', toStr: '2020-01-02' });
+    assert.strictEqual(reportPast.txCount, 0);
+    assert.strictEqual(reportPast.totalIncome, 0);
+    assert.strictEqual(reportPast.totalExpense, 0);
+
+    // Edge case: --from without --to throws error
+    assert.throws(() => {
+      generateReport({ fromStr: '2020-01-01' });
+    }, /required/);
+  });
 });

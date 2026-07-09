@@ -5,6 +5,7 @@ const { addCategory, listCategories } = require('./category');
 const { addTransaction, listTransactions, deleteTransaction } = require('./transaction');
 const { loadData } = require('./storage');
 const { addDebt, settleDebt, listDebts } = require('./debt');
+const { generateReport } = require('./report');
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -47,6 +48,10 @@ Loans & Debts:
   mm debt list [--friend <name>] [--unsettled]
   mm debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <description>]
   mm debt settle <debt_id> --wallet <wallet>
+
+Reports:
+  mm report <daily|weekly|monthly>
+  mm report --from YYYY-MM-DD --to YYYY-MM-DD
 
 Summary & Overview:
   mm summary
@@ -296,6 +301,22 @@ function handleSummary() {
   console.log('======================================\n');
 }
 
+function handleReport() {
+  const flags = parseFlags(args.slice(1));
+  const period = args[1];
+
+  try {
+    generateReport({
+      period,
+      fromStr: flags.from,
+      toStr: flags.to
+    });
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
 // Route commands
 switch (command) {
   case 'wallet':
@@ -309,6 +330,9 @@ switch (command) {
     break;
   case 'debt':
     handleDebt();
+    break;
+  case 'report':
+    handleReport();
     break;
   case 'summary':
     handleSummary();
