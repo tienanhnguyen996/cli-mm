@@ -80,8 +80,17 @@ Do not specify `--wallet` (or `--tx`). The debt record will be logged without ch
         `mm debt settle <debt_id> --wallet <wallet>`
 *   User: "I paid Minh back"
     1.  Suggest finding the debt ID first: `mm debt list --friend Minh --unsettled`
-    2.  Generate the settlement command (which decreases your wallet balance):
         `mm debt settle <debt_id> --wallet <wallet>`
+
+---
+
+## 4. Financial Reporting Workflow
+When the user requests an analysis, report, or summary of their spending/income over a period:
+*   **Daily:** For "today", use: `mm report daily`
+*   **Weekly:** For "this week", use: `mm report weekly`
+*   **Monthly:** For "this month", use: `mm report monthly`
+*   **Custom Range:** For specific dates (e.g., "from July 1 to July 9"), use:
+    `mm report --from 2026-07-01 --to 2026-07-09`
 
 ---
 

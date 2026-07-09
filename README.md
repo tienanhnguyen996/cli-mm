@@ -108,7 +108,17 @@ If you are installing inside Termux, follow these extra steps:
 ### Summary & Reports
 *   **Print overview summary:**
     ```bash
-    node index.js summary
+    mm summary
+    ```
+*   **Generate daily/weekly/monthly reports:**
+    ```bash
+    mm report daily
+    mm report weekly
+    mm report monthly
+    ```
+*   **Generate custom range reports:**
+    ```bash
+    mm report --from YYYY-MM-DD --to YYYY-MM-DD
     ```
 
 ---
