@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const DB_FILE = path.join(process.cwd(), 'data.json');
+const DB_FILE = process.env.NODE_ENV === 'test'
+  ? path.join(process.cwd(), 'test-data.json')
+  : path.join(process.cwd(), 'data.json');
 
 const DEFAULT_DATA = {
   wallets: [

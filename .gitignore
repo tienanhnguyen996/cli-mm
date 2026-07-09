@@ -1,2 +1,3 @@
-# Local database file containing private financial data
+# Local database files containing private financial data
 data.json
+test-data.json
