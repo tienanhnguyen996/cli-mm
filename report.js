@@ -161,27 +161,34 @@ function generateReport({ period, fromStr, toStr }) {
     const youOwe = {};
 
     unsettled.forEach(d => {
+      const norm = d.friend.trim().toLowerCase();
       if (d.type === 'lend') {
-        owedToYou[d.friend] = (owedToYou[d.friend] || 0) + d.amount;
+        if (!owedToYou[norm]) {
+          owedToYou[norm] = { displayName: d.friend.trim(), amount: 0 };
+        }
+        owedToYou[norm].amount += d.amount;
       } else if (d.type === 'borrow') {
-        youOwe[d.friend] = (youOwe[d.friend] || 0) + d.amount;
+        if (!youOwe[norm]) {
+          youOwe[norm] = { displayName: d.friend.trim(), amount: 0 };
+        }
+        youOwe[norm].amount += d.amount;
       }
     });
 
-    const owedToYouEntries = Object.entries(owedToYou);
-    const youOweEntries = Object.entries(youOwe);
+    const owedToYouList = Object.values(owedToYou);
+    const youOweList = Object.values(youOwe);
 
-    if (owedToYouEntries.length > 0) {
+    if (owedToYouList.length > 0) {
       console.log('  * Owed to You (Friends owe you):');
-      owedToYouEntries.forEach(([friend, amount]) => {
-        console.log(`    - ${friend}: ${formatCurrency(amount)}`);
+      owedToYouList.forEach(entry => {
+        console.log(`    - ${entry.displayName}: ${formatCurrency(entry.amount)}`);
       });
     }
 
-    if (youOweEntries.length > 0) {
+    if (youOweList.length > 0) {
       console.log('  * You Owe (You owe friends):');
-      youOweEntries.forEach(([friend, amount]) => {
-        console.log(`    - ${friend}: ${formatCurrency(amount)}`);
+      youOweList.forEach(entry => {
+        console.log(`    - ${entry.displayName}: ${formatCurrency(entry.amount)}`);
       });
     }
   }
