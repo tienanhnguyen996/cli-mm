@@ -82,3 +82,14 @@ Do not specify `--wallet` (or `--tx`). The debt record will be logged without ch
     1.  Suggest finding the debt ID first: `mm debt list --friend Minh --unsettled`
     2.  Generate the settlement command (which decreases your wallet balance):
         `mm debt settle <debt_id> --wallet <wallet>`
+
+---
+
+## 4. Termux (Android) Environment Nuances
+If the user reports that the `mm` executable does not run on Termux (e.g. throwing shebang or command-not-found errors):
+1.  **Shebang Path:** Verify that the shebang at the top of `index.js` points to `#!/data/data/com.termux/files/usr/bin/env node`.
+2.  **Permissions:** Instruct the user to run `chmod +x index.js` to grant executable permissions.
+3.  **PATH configuration:** If it throws `command not found` after `npm link`, instruct the user to run:
+    `export PATH=$PATH:$(npm get prefix)/bin`
+    And recommend they add it to their shell rc file (`~/.bashrc` or `~/.zshrc`).
+

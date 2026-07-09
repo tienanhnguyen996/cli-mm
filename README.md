@@ -32,6 +32,19 @@ npm link
 
 Once linked, you can replace `node index.js` in all commands with `mm` or `cli-mm` (e.g. `mm summary`).
 
+### Termux (Android) Installation Notes:
+If you are installing inside Termux, follow these extra steps:
+1. **Grant executable permission:**
+   ```bash
+   chmod +x index.js
+   ```
+2. **Configure PATH environment variable:**
+   If you get a `command not found` error after linking, add the global npm binary prefix to your `$PATH`:
+   ```bash
+   export PATH=$PATH:$(npm get prefix)/bin
+   ```
+   *(To make this permanent, append the line above to your `~/.bashrc` or `~/.zshrc` configuration files).*
+
 ---
 
 ## Command Reference
