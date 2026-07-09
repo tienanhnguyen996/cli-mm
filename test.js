@@ -259,4 +259,62 @@ test.describe('cli-mm test suite', () => {
       });
     }, /must be either/);
   });
+
+  test('Credit Wallet: limits and transaction validation', () => {
+    // Add credit card wallet (Limit: 10,000,000)
+    const card = addWallet('CreditCard', 0, 'credit', 10000000);
+    assert.strictEqual(card.type, 'credit');
+    assert.strictEqual(card.limit, 10000000);
+    assert.strictEqual(card.balance, 0);
+
+    // Spend 3,000,000 (valid)
+    const { newBalance: b1 } = addTransaction({
+      walletName: 'CreditCard',
+      categoryName: 'Shopping',
+      amount: -3000000,
+      description: 'New Shoes'
+    });
+    assert.strictEqual(b1, -3000000);
+
+    // Spend another 8,000,000 (invalid: total -11,000,000 exceeds limit of -10,000,000)
+    assert.throws(() => {
+      addTransaction({
+        walletName: 'CreditCard',
+        categoryName: 'Shopping',
+        amount: -8000000,
+        description: 'New Phone'
+      });
+    }, /exceeds the credit limit/);
+
+    // Wallet balance should remain -3,000,000
+    const cardUpdated = getWallet('creditcard');
+    assert.strictEqual(cardUpdated.balance, -3000000);
+
+    // Test transaction deletion that violates credit limit:
+    // Log a refund of 5,000,000 -> Balance becomes +2,000,000
+    const { transaction: refundTx } = addTransaction({
+      walletName: 'CreditCard',
+      categoryName: 'Shopping',
+      amount: 5000000,
+      description: 'Refund'
+    });
+    assert.strictEqual(getWallet('creditcard').balance, 2000000);
+
+    // Log another expense of -11,000,000 -> Balance becomes -9,000,000 (valid, under 10M limit)
+    addTransaction({
+      walletName: 'CreditCard',
+      categoryName: 'Shopping',
+      amount: -11000000,
+      description: 'Gadget'
+    });
+    assert.strictEqual(getWallet('creditcard').balance, -9000000);
+
+    // Attempting to delete the +5M refund would make balance -14,000,000, which violates the 10M limit!
+    assert.throws(() => {
+      deleteTransaction(refundTx.id);
+    }, /exceed the credit limit/);
+
+    // Balance should remain -9,000,000
+    assert.strictEqual(getWallet('creditcard').balance, -9000000);
+  });
 });

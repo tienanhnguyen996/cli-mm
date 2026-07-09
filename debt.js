@@ -53,6 +53,14 @@ function addDebt({ type, friendName, amount, txId, walletName, description }) {
       timestamp: new Date().toISOString()
     };
 
+    // Verify credit limit
+    if (wallet.type === 'credit') {
+      const nextBalance = wallet.balance + changeAmount;
+      if (nextBalance < -wallet.limit) {
+        throw new Error(`Lending/Borrowing this amount exceeds the credit limit of ${wallet.limit}. Available credit: ${wallet.limit + wallet.balance}.`);
+      }
+    }
+
     // Update wallet balance and save transaction
     wallet.balance += changeAmount;
     data.transactions.push(newTx);
@@ -126,6 +134,14 @@ function settleDebt(debtId, walletName) {
     description: txDesc,
     timestamp: new Date().toISOString()
   };
+
+  // Verify credit limit
+  if (wallet.type === 'credit') {
+    const nextBalance = wallet.balance + changeAmount;
+    if (nextBalance < -wallet.limit) {
+      throw new Error(`Settling this debt exceeds the credit limit of ${wallet.limit}. Available credit: ${wallet.limit + wallet.balance}.`);
+    }
+  }
 
   // Adjust wallet balance
   wallet.balance += changeAmount;

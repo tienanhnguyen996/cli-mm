@@ -31,26 +31,26 @@ function showHelp() {
 CLI Money Management (cli-mm) - Usage Guide
 
 Wallets:
-  node index.js wallet list
-  node index.js wallet add <name> [initial_balance]
+  mm wallet list
+  mm wallet add <name> [initial_balance] [--type <normal|credit>] [--limit <limit>]
 
 Categories:
-  node index.js category list
-  node index.js category add <name>
+  mm category list
+  mm category add <name>
 
 Transactions:
-  node index.js tx list [--wallet <name>] [--category <name>]
-  node index.js tx add --wallet <wallet> --category <category> --amount <amount> [--desc <description>]
-  node index.js tx delete <transaction_id>
+  mm tx list [--wallet <name>] [--category <name>]
+  mm tx add --wallet <wallet> --category <category> --amount <amount> [--desc <description>]
+  mm tx delete <transaction_id>
 
 Loans & Debts:
-  node index.js debt list [--friend <name>] [--unsettled]
-  node index.js debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <description>]
-  node index.js debt settle <debt_id> --wallet <wallet>
+  mm debt list [--friend <name>] [--unsettled]
+  mm debt add --type <lend|borrow> --friend <name> --amount <amount> [--wallet <wallet>] [--tx <tx_id>] [--desc <description>]
+  mm debt settle <debt_id> --wallet <wallet>
 
 Summary & Overview:
-  node index.js summary
-  node index.js help
+  mm summary
+  mm help
 `);
 }
 
@@ -64,23 +64,43 @@ function handleWallet() {
     const list = listWallets();
     console.log('\n--- WALLETS ---');
     if (list.length === 0) {
-      console.log('No wallets found. Create one using: node index.js wallet add <name>');
+      console.log('No wallets found. Create one using: mm wallet add <name>');
     } else {
       list.forEach(w => {
-        console.log(`- ${w.name} (ID: ${w.id}) | Balance: ${formatCurrency(w.balance)}`);
+        if (w.type === 'credit') {
+          const available = w.limit + w.balance;
+          console.log(`- ${w.name} (ID: ${w.id}) [Credit] | Balance: ${formatCurrency(w.balance)} (Limit: ${formatCurrency(w.limit)}, Available: ${formatCurrency(available)})`);
+        } else {
+          console.log(`- ${w.name} (ID: ${w.id}) | Balance: ${formatCurrency(w.balance)}`);
+        }
       });
     }
     console.log('');
   } else if (subcommand === 'add') {
     const name = args[2];
-    const initialBalance = Number(args[3]) || 0;
     if (!name) {
-      console.error('Error: Please specify a wallet name. Example: node index.js wallet add "TPBank" 100000');
+      console.error('Error: Please specify a wallet name. Example: mm wallet add "TPBank" 100000');
       process.exit(1);
     }
+    
+    // Parse flags from index 3 onwards
+    const flags = parseFlags(args.slice(3));
+    let initialBalance = 0;
+    // If the first argument after name is a number, it's the initial balance
+    if (args[3] && !args[3].startsWith('--') && !isNaN(Number(args[3]))) {
+      initialBalance = Number(args[3]);
+    }
+
+    const type = flags.type || 'normal';
+    const limit = flags.limit || 0;
+
     try {
-      const wallet = addWallet(name, initialBalance);
-      console.log(`Wallet "${wallet.name}" successfully created with balance of ${formatCurrency(wallet.balance)}.`);
+      const wallet = addWallet(name, initialBalance, type, limit);
+      if (wallet.type === 'credit') {
+        console.log(`Credit Wallet "${wallet.name}" successfully created with limit of ${formatCurrency(wallet.limit)}.`);
+      } else {
+        console.log(`Wallet "${wallet.name}" successfully created with balance of ${formatCurrency(wallet.balance)}.`);
+      }
     } catch (error) {
       console.error(`Error: ${error.message}`);
       process.exit(1);

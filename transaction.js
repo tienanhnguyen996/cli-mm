@@ -34,6 +34,14 @@ function addTransaction({ walletName, categoryName, amount, description }) {
     timestamp: new Date().toISOString()
   };
 
+  // Verify credit limit
+  if (wallet.type === 'credit') {
+    const nextBalance = wallet.balance + txAmount;
+    if (nextBalance < -wallet.limit) {
+      throw new Error(`Transaction of ${txAmount} exceeds the credit limit of ${wallet.limit}. Available credit: ${wallet.limit + wallet.balance}.`);
+    }
+  }
+
   // Update wallet balance
   wallet.balance += txAmount;
 
@@ -75,6 +83,12 @@ function deleteTransaction(id) {
   const wallet = data.wallets.find(w => w.id === tx.walletId);
   
   if (wallet) {
+    if (wallet.type === 'credit') {
+      const nextBalance = wallet.balance - tx.amount;
+      if (nextBalance < -wallet.limit) {
+        throw new Error('Deleting this transaction would exceed the credit limit.');
+      }
+    }
     // Revert the balance changes (subtract the original amount added)
     wallet.balance -= tx.amount;
   }
